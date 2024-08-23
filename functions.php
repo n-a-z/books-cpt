@@ -200,7 +200,7 @@ add_shortcode('recent_book_title', 'most_recent_book_title_shortcode');
 
 /** 
  * Shortcode to display a list of 5 books from a given genre using taxonomy ID
- * [books_by_genre genre_id=”″]
+ * [books_by_genre genre_id=""]
  */
 function books_by_genre_shortcode($atts)
 {

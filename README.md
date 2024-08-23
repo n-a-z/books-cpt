@@ -7,9 +7,9 @@ Insert your custom CSS rules in style.css.
 Custom JavaScript file is located in assets/js/scripts.js.
 
 ## CPT and Taxonomy
-This adds custom post type “Books” with taxonomy “Genre”.
-Custom post type has “library” slug.
-Taxonomy has “book-genre” slug.
+This adds custom post type "Books" with taxonomy "Genre".
+Custom post type has "library" slug.
+Taxonomy has "book-genre" slug.
 
 ## Custom templates
 Single Book page can be found in single-books.php.
@@ -20,7 +20,7 @@ There are two custom shortcodes:
 ### recent_book_title
 Shortcode to display the title of the most recent book.
 
-### books_by_genre genre_id=”″
+### books_by_genre genre_id=""
 Shortcode to display a list of 5 books from a given genre using taxonomy ID.
 
 ## AJAX callback
