@@ -151,3 +151,99 @@ function modify_genre_query($query)
     }
 }
 add_action('pre_get_posts', 'modify_genre_query');
+
+/**
+ * Shortcode to display the title of the most recent book
+ * [recent_book_title]
+ */
+function most_recent_book_title_shortcode()
+{
+    // Query the most recent book
+    $recent_book = new WP_Query(array(
+        'post_type' => 'books',
+        'posts_per_page' => 1,
+        'orderby' => 'date',
+        'order' => 'DESC'
+    ));
+
+    // Check if we have a post
+    if ($recent_book->have_posts()) {
+        // Start output buffering
+        ob_start();
+
+        while ($recent_book->have_posts()) {
+            $recent_book->the_post();
+            // Output the title of the book
+            echo '<div class="book-list">';
+            echo '<a href="' . get_permalink() . '">' . esc_html(get_the_title()) . '</a>';
+            echo '</div>';
+        }
+
+        // Clean up after the query
+        wp_reset_postdata();
+
+        // Return the buffered content
+        return ob_get_clean();
+    } else {
+        return esc_html__('No recent books found.', 'your-text-domain');
+    }
+}
+
+// Register the shortcode
+add_shortcode('recent_book_title', 'most_recent_book_title_shortcode');
+
+/** 
+ * Shortcode to display a list of 5 books from a given genre using taxonomy ID
+ * [books_by_genre genre_id=”″]
+ */
+function books_by_genre_shortcode($atts)
+{
+    // Attributes to accept 'genre_id' as input
+    $atts = shortcode_atts(
+        array(
+            'genre_id' => '', // Default genre ID
+        ),
+        $atts,
+        'books_by_genre'
+    );
+
+    // Query the books based on the genre ID
+    $books_query = new WP_Query(array(
+        'post_type' => 'books',
+        'posts_per_page' => 5,
+        'orderby' => 'title',
+        'order' => 'ASC',
+        'tax_query' => array(
+            array(
+                'taxonomy' => 'genre',
+                'field'    => 'term_id',
+                'terms'    => $atts['genre_id'],
+            ),
+        ),
+    ));
+
+    // Check if we have posts
+    if ($books_query->have_posts()) {
+        // Start output buffering
+        ob_start();
+
+        echo '<div class="book-list">';
+        while ($books_query->have_posts()) {
+            $books_query->the_post();
+            // Output each book title as a list item with a link to the book
+            echo '<a href="' . get_permalink() . '">' . esc_html(get_the_title()) . '</a><br />';
+        }
+        echo '</div>';
+
+        // Clean up after the query
+        wp_reset_postdata();
+
+        // Return the buffered content
+        return ob_get_clean();
+    } else {
+        return esc_html__('No books found for this genre.', 'your-text-domain');
+    }
+}
+
+// Register the shortcode
+add_shortcode('books_by_genre', 'books_by_genre_shortcode');
