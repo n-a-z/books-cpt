@@ -12,6 +12,12 @@ function enqueue_scripts()
 {
     wp_enqueue_script('jquery'); // Enqueue jQuery
     wp_enqueue_script('custom-scripts', get_stylesheet_directory_uri() . '/assets/js/scripts.js', array('jquery'), '1.0.0', true);
+
+    // Localize the script with new data
+    wp_localize_script('custom-scripts', 'books_ajax_obj', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('books_nonce'),
+    ));
 }
 add_action('wp_enqueue_scripts', 'enqueue_scripts');
 
@@ -247,3 +253,49 @@ function books_by_genre_shortcode($atts)
 
 // Register the shortcode
 add_shortcode('books_by_genre', 'books_by_genre_shortcode');
+
+/** 
+ * AJAX Handler for callback returning 20 books in JSON format
+ */
+function ajax_get_books()
+{
+    // Check for nonce security
+    check_ajax_referer('books_nonce', 'security');
+
+    // Query parameters for fetching 20 books
+    $args = array(
+        'post_type' => 'books',
+        'posts_per_page' => 20,
+    );
+
+    $books_query = new WP_Query($args);
+
+    $books = array();
+
+    if ($books_query->have_posts()) {
+        while ($books_query->have_posts()) {
+            $books_query->the_post();
+
+            // Get the genre terms
+            $genres = wp_get_post_terms(get_the_ID(), 'genre', array('fields' => 'names'));
+
+            // Append each book's details to the array
+            $books[] = array(
+                'name' => get_the_title(),
+                'date' => get_the_date('Y-m-d'),
+                'genre' => $genres,
+                'excerpt' => get_the_excerpt(),
+            );
+        }
+    }
+
+    // Restore original Post Data
+    wp_reset_postdata();
+
+    // Return the books in JSON format
+    wp_send_json($books);
+}
+
+// Register AJAX actions for logged-in and non-logged-in users
+add_action('wp_ajax_get_books', 'ajax_get_books');
+add_action('wp_ajax_nopriv_get_books', 'ajax_get_books');
