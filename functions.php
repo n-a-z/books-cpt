@@ -139,3 +139,15 @@ function cptui_register_my_taxes_genre()
     register_taxonomy("genre", ["books"], $args);
 }
 add_action('init', 'cptui_register_my_taxes_genre');
+
+/**
+ * Pagination fix for Genre Taxonomy
+ */
+function modify_genre_query($query)
+{
+    if (!is_admin() && $query->is_main_query() && is_tax('genre')) {
+        $query->set('post_type', 'books');
+        $query->set('posts_per_page', 5);
+    }
+}
+add_action('pre_get_posts', 'modify_genre_query');
